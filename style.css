@@ -62,3 +62,75 @@ body, html {
     font-size: 14px;
     display: none;
 }
+
+.location-panel {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background-color: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.location-panel label {
+    font-weight: bold;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.location-panel select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 15px;
+    outline: none;
+}
+
+.route-btn {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.gmaps-btn {
+    display: block;
+    text-align: center;
+    background-color: #3b82f6;
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    margin-top: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.distance-badge {
+    position: absolute;
+    top: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background-color: #f59e0b;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
