@@ -24,8 +24,12 @@ locateBtn.addEventListener('click', () => {
     statusBox.style.display = 'block';
     statusBox.innerText = 'Mencari sinyal GPS Anda...';
     
-    // Gunakan high accuracy agar bekerja maksimal di smartphone
-    navigator.geolocation.getCurrentPosition(
+    // Gunakan watchPosition agar Titik Biru bergerak otomatis mengikuti pengguna (Live Tracking)
+    if (window.gpsWatchId) {
+        navigator.geolocation.clearWatch(window.gpsWatchId);
+    }
+    
+    window.gpsWatchId = navigator.geolocation.watchPosition(
         position => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
@@ -34,18 +38,18 @@ locateBtn.addEventListener('click', () => {
             statusBox.style.display = 'none';
             
             if (userMarker) {
-                map.removeLayer(userMarker);
-                map.removeLayer(userCircle);
-            }
-            
-            // Marker GPS Pengguna
-            userMarker = L.marker([lat, lng]).addTo(map)
-                .bindPopup("Posisi Anda Saat Ini").openPopup();
+                userMarker.setLatLng([lat, lng]);
+                userCircle.setLatLng([lat, lng]);
+                userCircle.setRadius(accuracy);
+            } else {
+                // Marker GPS Pengguna (Pertama kali)
+                userMarker = L.marker([lat, lng]).addTo(map)
+                    .bindPopup("Posisi Anda Saat Ini").openPopup();
+                userCircle = L.circle([lat, lng], { radius: accuracy, color: '#3b82f6' }).addTo(map);
                 
-            userCircle = L.circle([lat, lng], { radius: accuracy, color: '#3b82f6' }).addTo(map);
-            
-            // Auto zoom ke posisi user
-            map.setView([lat, lng], 17);
+                // Auto zoom ke posisi user HANYA pada saat pertama kali agar layar tidak lompat-lompat
+                map.setView([lat, lng], 17);
+            }
         },
         error => {
             statusBox.innerText = 'Gagal mendapat sinyal GPS. Pastikan GPS HP menyala.';
