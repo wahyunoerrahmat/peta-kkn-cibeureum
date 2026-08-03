@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cibeureum-offline-map-v2';
+const CACHE_NAME = 'cibeureum-offline-map-v3';
 const ASSETS_TO_CACHE = [
   './index.html',
   './style.css',

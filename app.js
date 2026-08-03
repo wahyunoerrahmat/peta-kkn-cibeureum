@@ -89,8 +89,8 @@ locationSelect.addEventListener('change', (e) => {
     map.setView([lat, lng], 17);
 });
 
-// Fungsi untuk menggambar rute lurus
-window.drawRoute = function(destLat, destLng) {
+// Fungsi untuk menggambar rute (Jalan Darat OSRM dengan Fallback Offline)
+window.drawRoute = async function(destLat, destLng) {
     if (!userMarker) {
         alert("Silakan tekan tombol 'Lacak Posisi Saya' di bawah agar sistem mengetahui titik awal Anda!");
         return;
@@ -101,22 +101,52 @@ window.drawRoute = function(destLat, destLng) {
     
     if (routeLine) map.removeLayer(routeLine);
     
-    // Gambar garis putus-putus merah
-    routeLine = L.polyline([[userLat, userLng], [destLat, destLng]], {
-        color: '#ef4444',
-        weight: 5,
-        dashArray: '10, 10'
-    }).addTo(map);
+    distanceBadge.innerText = 'Menghitung rute...';
+    distanceBadge.style.display = 'block';
+    distanceBadge.style.backgroundColor = '#3b82f6';
+    
+    try {
+        // Coba request ke server OSRM (Butuh Internet)
+        const response = await fetch(`https://router.project-osrm.org/route/v1/walking/${userLng},${userLat};${destLng},${destLat}?overview=full&geometries=geojson`);
+        if (!response.ok) throw new Error("Gagal mengambil rute");
+        
+        const data = await response.json();
+        const routeData = data.routes[0];
+        const coordinates = routeData.geometry.coordinates;
+        const distMeters = routeData.distance; // Real road distance
+        
+        // Konversi koordinat GeoJSON [lng, lat] ke Leaflet [lat, lng]
+        const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
+        
+        // Gambar jalur darat meliuk-liuk
+        routeLine = L.polyline(latLngs, {
+            color: '#10b981', // Hijau (Berhasil rute darat)
+            weight: 6,
+            opacity: 0.8
+        }).addTo(map);
+        
+        let distText = distMeters < 1000 ? Math.round(distMeters) + ' m' : (distMeters/1000).toFixed(2) + ' km';
+        distanceBadge.innerText = 'Jarak Darat (Jalan/Motor): ' + distText;
+        distanceBadge.style.backgroundColor = '#10b981';
+        
+    } catch (error) {
+        // FALLBACK OFFLINE: Jika tidak ada sinyal internet, gunakan garis lurus!
+        console.warn("Sedang offline atau server rute mati. Beralih ke rute lurus.");
+        
+        routeLine = L.polyline([[userLat, userLng], [destLat, destLng]], {
+            color: '#ef4444', // Merah (Offline lurus)
+            weight: 5,
+            dashArray: '10, 10'
+        }).addTo(map);
+        
+        const distMeters = map.distance([userLat, userLng], [destLat, destLng]);
+        let distText = distMeters < 1000 ? Math.round(distMeters) + ' m' : (distMeters/1000).toFixed(2) + ' km';
+        
+        distanceBadge.innerText = 'Jarak Udara (Mode Offline): ' + distText;
+        distanceBadge.style.backgroundColor = '#f59e0b';
+    }
     
     // Sesuaikan layar agar pengguna dan tujuan terlihat
     map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-    
-    // Hitung jarak
-    const distMeters = map.distance([userLat, userLng], [destLat, destLng]);
-    let distText = distMeters < 1000 ? Math.round(distMeters) + ' m' : (distMeters/1000).toFixed(2) + ' km';
-    
-    distanceBadge.innerText = 'Jarak Udara: ' + distText;
-    distanceBadge.style.display = 'block';
-    
     destMarker.closePopup();
 };
