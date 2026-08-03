@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peta Desa Cibeureum (Offline GPS)</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="offline-banner" id="offline-banner">
+        Anda sedang offline. Peta dimuat dari memori (GPS tetap berfungsi).
+    </div>
+
+    <button id="locate-btn" class="locate-btn">📍 Lacak Posisi Saya</button>
+    <div id="status" class="status-box">Menunggu sinyal GPS...</div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+
+        // Offline detection UI
+        window.addEventListener('offline', () => {
+            document.getElementById('offline-banner').style.display = 'block';
+        });
+        window.addEventListener('online', () => {
+            document.getElementById('offline-banner').style.display = 'none';
+        });
+        if (!navigator.onLine) {
+            document.getElementById('offline-banner').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
